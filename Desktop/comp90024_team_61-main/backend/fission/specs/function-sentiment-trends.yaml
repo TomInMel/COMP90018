@@ -1,0 +1,27 @@
+apiVersion: fission.io/v1
+kind: Function
+metadata:
+  creationTimestamp: null
+  name: sentiment-trends
+spec:
+  InvokeStrategy:
+    ExecutionStrategy:
+      ExecutorType: poolmgr
+      MaxScale: 0
+      MinScale: 1
+      SpecializationTimeout: 120
+      TargetCPUPercent: 0
+    StrategyType: execution
+  concurrency: 500
+  environment:
+    name: python39
+    namespace: ""
+  functionTimeout: 300
+  idletimeout: 300
+  package:
+    functionName: sentiment_trends.main
+    packageref:
+      name: sentiment-trends
+      namespace: ""
+  requestsPerPod: 1
+  resources: {}

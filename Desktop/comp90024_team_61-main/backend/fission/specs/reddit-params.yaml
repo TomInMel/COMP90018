@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reddit-params
+data:
+  CLIENT_ID: zjIo5NB706ACLaWqKe250A
+  REDDIT_USERNAME: Horror-Accountant498
+  USER_AGENT: just-data-script by Horror-Accountant498

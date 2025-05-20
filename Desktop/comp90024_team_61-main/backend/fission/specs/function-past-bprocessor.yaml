@@ -1,0 +1,52 @@
+include:
+- ./past-bprocessor.js
+kind: ArchiveUploadSpec
+name: past-bprocessor-js-C5lo
+
+---
+apiVersion: fission.io/v1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: past-bprocessor-d28093c6-4323-4b21-88c9-605ca712d4dc
+spec:
+  deployment:
+    checksum: {}
+    type: url
+    url: archive://past-bprocessor-js-C5lo
+  environment:
+    name: nodejs
+    namespace: ""
+  source:
+    checksum: {}
+status:
+  buildstatus: none
+  lastUpdateTimestamp: "2025-05-19T01:36:22Z"
+
+---
+apiVersion: fission.io/v1
+kind: Function
+metadata:
+  creationTimestamp: null
+  name: past-bprocessor
+spec:
+  InvokeStrategy:
+    ExecutionStrategy:
+      ExecutorType: poolmgr
+      MaxScale: 0
+      MinScale: 0
+      SpecializationTimeout: 120
+      TargetCPUPercent: 0
+    StrategyType: execution
+  concurrency: 500
+  environment:
+    name: nodejs
+    namespace: ""
+  functionTimeout: 60
+  idletimeout: 120
+  package:
+    packageref:
+      name: past-bprocessor-d28093c6-4323-4b21-88c9-605ca712d4dc
+      namespace: ""
+  requestsPerPod: 1
+  resources: {}

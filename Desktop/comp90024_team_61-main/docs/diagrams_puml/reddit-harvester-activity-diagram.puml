@@ -1,0 +1,57 @@
+@startuml
+skinparam linetype ortho
+skinparam shadowing false
+skinparam monochrome true
+
+start
+
+:Initialize Reddit client and Redis;
+:Get subreddits from Redis;
+if (Found any?) then (yes)
+  :Use existing subreddit list;
+else (no)
+  :Search subreddit by topic;
+  :Store subreddit into Redis and mark as active;
+endif
+
+repeat
+  :Choose next subreddit;
+  if (Any processing subreddits?) then (yes)
+    :Select a 'processing' subreddit;
+  else (no)
+    if (Any active subreddits?) then (yes)
+      :Select an 'active' subreddit;
+    else (no)
+      if (Any failed subreddits?) then (yes)
+        :Retry a 'failed' subreddit;
+      else (no)
+        :All subreddits are finished;\nExit early;
+        stop
+      endif
+    endif
+  endif
+
+  :Get post IDs and load cursor from Redis;
+
+  repeat
+    :Check if post already processed;
+    if (Yes?) then (skip)
+      :Skip post;
+    else (No)
+      :Fetch post + comments;\nEnqueue post + comments;\nMark post as processed;
+    endif
+    :Update cursor;
+  repeat while (cursor < post_ids && not timed out?)is (Yes)
+  ->no;
+
+  if (All posts processed in subreddit?) then (yes)
+    :Mark subreddit as finished;
+  else (no)
+    :Mark subreddit as processing;
+  endif
+repeat while (still subreddits remain && not timed out)is (Yes)
+->no;
+
+:Cleanup Redis connection;
+stop
+@enduml

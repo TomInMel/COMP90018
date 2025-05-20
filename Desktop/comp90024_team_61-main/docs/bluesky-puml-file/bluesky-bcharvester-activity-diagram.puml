@@ -1,0 +1,36 @@
+@startuml
+start
+
+partition Login {
+    :Login to Bluesky and connect to Redis;
+    
+    if (Redis has "last_time"?) then (Yes)
+        :Read "last_time";
+    else (No)
+        :Set time = 2025-05-11T00:00:00Z;
+    endif
+}
+
+:Search posts with keyword "Trump";
+
+if (No posts found?) then (Yes)
+    :Return "no posts";
+    stop
+endif
+
+
+:Get profiles for a list of actor;
+
+
+if (Profile contains any AU keyword?) then (Yes)
+    :Send post to enqueue;
+    :Get replies of the post;
+    :Send replys to enqueue;
+else (No)
+endif
+
+:Update Redis "last_time";
+:Return "OK from bluesky";
+
+stop
+@enduml

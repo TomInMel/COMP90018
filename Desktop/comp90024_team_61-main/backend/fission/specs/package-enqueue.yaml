@@ -1,0 +1,28 @@
+include:
+- ./functions/enqueue/__init__.py
+- ./functions/enqueue/enqueue.py
+- ./functions/enqueue/requirements.txt
+- ./functions/enqueue/build.sh
+kind: ArchiveUploadSpec
+name: functions-enqueue---init---py-PLH1
+
+---
+apiVersion: fission.io/v1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: enqueue
+spec:
+  buildcmd: ./build.sh
+  deployment:
+    checksum: {}
+  environment:
+    name: python39
+    namespace: ""
+  source:
+    checksum: {}
+    type: url
+    url: archive://functions-enqueue---init---py-PLH1
+status:
+  buildstatus: pending
+  lastUpdateTimestamp: "2025-05-05T12:12:55Z"

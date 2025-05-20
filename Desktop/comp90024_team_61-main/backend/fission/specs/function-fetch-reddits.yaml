@@ -1,0 +1,31 @@
+apiVersion: fission.io/v1
+kind: Function
+metadata:
+  creationTimestamp: null
+  name: fetch-reddits
+spec:
+  InvokeStrategy:
+    ExecutionStrategy:
+      ExecutorType: poolmgr
+      MaxScale: 1
+      MinScale: 1
+      SpecializationTimeout: 300
+      TargetCPUPercent: 0
+    StrategyType: execution
+  concurrency: 1
+  environment:
+    name: python39
+    namespace: ""
+  functionTimeout: 3600
+  idletimeout: 120
+  package:
+    functionName: reddit_harvester.main
+    packageref:
+      name: fetch-reddits
+      namespace: ""
+  requestsPerPod: 1
+  resources: {}
+  configmaps:
+    - name: reddit-params
+  secrets:
+    - name: reddit-secrets

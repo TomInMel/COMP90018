@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: default
+  name: shared-data
+data:
+  ES_USERNAME: elastic
+  ES_PASSWORD: elastic
+  HANDLE: wudiniuzi.bsky.social
+  APP_PASSWORD: Qaz572455256.

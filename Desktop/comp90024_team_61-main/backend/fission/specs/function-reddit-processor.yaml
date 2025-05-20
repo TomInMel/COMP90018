@@ -1,0 +1,52 @@
+include:
+  - ./functions/redditProcessor.js
+kind: ArchiveUploadSpec
+name: functions-redditprocessor-js-cJ4D
+
+---
+apiVersion: fission.io/v1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: reddit-processor-4cb2bfd3-071d-4b69-a3a4-c435cb217b40
+spec:
+  deployment:
+    checksum: {}
+    type: url
+    url: archive://functions-redditprocessor-js-cJ4D
+  environment:
+    name: nodejs
+    namespace: ""
+  source:
+    checksum: {}
+status:
+  buildstatus: none
+  lastUpdateTimestamp: "2025-05-05T16:44:32Z"
+
+---
+apiVersion: fission.io/v1
+kind: Function
+metadata:
+  creationTimestamp: null
+  name: reddit-processor
+spec:
+  InvokeStrategy:
+    ExecutionStrategy:
+      ExecutorType: poolmgr
+      MaxScale: 10
+      MinScale: 1
+      SpecializationTimeout: 120
+      TargetCPUPercent: 0
+    StrategyType: execution
+  concurrency: 500
+  environment:
+    name: nodejs
+    namespace: ""
+  functionTimeout: 60
+  idletimeout: 120
+  package:
+    packageref:
+      name: reddit-processor-4cb2bfd3-071d-4b69-a3a4-c435cb217b40
+      namespace: ""
+  requestsPerPod: 20
+  resources: {}

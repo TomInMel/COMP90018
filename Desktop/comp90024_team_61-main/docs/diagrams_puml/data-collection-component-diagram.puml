@@ -1,0 +1,37 @@
+@startuml
+skinparam linetype ortho
+skinparam componentStyle rectangle
+
+
+node "Fission " {
+    actor "Fission Timer" as Timer
+
+    [fetch-data (Python)]<<function>>
+    [enqueue (Python)]<<function>>
+    [data-processor (Node.js)]<<function>>
+    [dequeue-to-es (Python)]<<function>>
+}
+
+node "Redis" {
+    [raw data] <<queue>>
+    [processed] <<queue>>
+}
+
+node "Elasticsearch" {
+    database "posts" as Posts<<index>>
+    database "comments" as Comments<<index>>
+
+}
+
+Timer --> [fetch-data (Python)] : timetrigger
+[fetch-data (Python)] --> [enqueue (Python)] : fission router call
+[enqueue (Python)] --> [raw data] : lpush
+
+[raw data] --> [data-processor (Node.js)] : rpop (mqtrigger)
+[data-processor (Node.js)] --> [processed] : lpush (respTopic)
+[processed] --> [dequeue-to-es (Python)] : rpop (mqtrigger)
+[dequeue-to-es (Python)] --> Posts : index posts
+[dequeue-to-es (Python)] --> Comments : index commentss
+
+
+@enduml

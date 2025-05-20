@@ -1,0 +1,8 @@
+flask
+pandas
+numpy
+elasticsearch==8.10.1
+gensim
+nltk
+scikit-learn
+python-dateutil

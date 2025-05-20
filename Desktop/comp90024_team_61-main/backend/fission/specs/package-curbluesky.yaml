@@ -1,0 +1,25 @@
+include:
+- ./curbluesky.zip
+kind: ArchiveUploadSpec
+name: curbluesky-zip-dppJ
+
+---
+apiVersion: fission.io/v1
+kind: Package
+metadata:
+  creationTimestamp: null
+  name: curbluesky
+spec:
+  buildcmd: ./build.sh
+  deployment:
+    checksum: {}
+  environment:
+    name: newpython39
+    namespace: ""
+  source:
+    checksum: {}
+    type: url
+    url: archive://curbluesky-zip-dppJ
+status:
+  buildstatus: pending
+  lastUpdateTimestamp: "2025-05-12T12:59:08Z"

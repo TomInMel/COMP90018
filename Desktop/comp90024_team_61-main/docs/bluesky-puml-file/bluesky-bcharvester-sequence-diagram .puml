@@ -1,0 +1,49 @@
+@startuml
+
+actor Timer
+participant "fetch-bluesky (python)" as Main
+participant "Bluesky API" as Bluesky
+participant "Redis" as Redis
+participant "Enqueue" as Enqueue
+
+Timer -> Main : main()
+
+
+Main -> Bluesky : login_bluesky(account, app_password)
+note right of Main : Get Bluesky's JWT
+Bluesky --> Main : jwt
+Main -> Redis : get("last_time")
+Redis --> Main : time or null
+alt no last_time
+    Main -> Main : time = '2025-05-11T00:00:00Z'
+end
+
+Main -> Bluesky : search_posts(jwt, 100, "Trump", time)
+note right of Main :Search trump's post
+Bluesky --> Main : posts
+
+alt no posts
+    Main -> Timer : return "no posts"
+    deactivate Main
+end
+
+Main -> Bluesky : get_profiles(jwt, did_list)
+note right of Main :Get the profile of the authors of posts
+Bluesky --> Main : profiles
+
+loop for each profile
+    Main -> Main : check if description contains AU keywords
+    alt match found
+        Main -> Enqueue : POST /enqueue/current_bluesky (post)
+        Main -> Bluesky : get_reply(jwt, post.uri)
+        Bluesky --> Main : reply_thread
+        Main -> Main : extract_reply(thread, post.cid)
+        loop for each reply
+            Main -> Enqueue : POST /enqueue/current_bluesky (reply)
+        end
+    end
+end
+note right of Main :Send posts and their replys to enqueue
+Main -> Redis : set("last_time", latest_post_time)
+
+@enduml

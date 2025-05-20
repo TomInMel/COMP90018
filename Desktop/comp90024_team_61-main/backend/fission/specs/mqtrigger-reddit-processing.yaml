@@ -1,0 +1,25 @@
+apiVersion: fission.io/v1
+kind: MessageQueueTrigger
+metadata:
+  creationTimestamp: null
+  name: reddit-processing
+spec:
+  contentType: application/json
+  cooldownPeriod: 300
+  errorTopic: reddit_errors
+  functionref:
+    functionweights: null
+    name: reddit-processor
+    type: name
+  maxReplicaCount: 100
+  maxRetries: 3
+  messageQueueType: redis
+  metadata:
+    address: redis-headless.redis.svc.cluster.local:6379
+    listLength: "100"
+    listName: reddit
+  minReplicaCount: 0
+  mqtkind: keda
+  pollingInterval: 30
+  respTopic: processed
+  topic: reddit

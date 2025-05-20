@@ -1,0 +1,77 @@
+@startuml
+actor Timer
+participant "fetch-reddits (Python)" as Fetch
+participant "Redis" as Redis
+participant "Reddit API" as RedditAPI
+participant "Fission Router\n(enqueue endpoint)" as Enqueue
+
+' Triggered by the Fission timer
+Timer -> Fetch : trigger()
+note right of Timer : Scheduled trigger via Fission Timer
+
+' Check for existing subreddits
+Fetch -> Redis : hkeys(STATUS_HASH)
+note right of Fetch : Get all tracked subreddits from Redis
+
+alt No subreddits found
+    Fetch -> RedditAPI : search subreddits by topic
+    ' note right of RedditAPI : Discover subreddits matching the topic
+    Fetch -> Redis : hset STATUS_HASH[sub] = "active"
+    note right of Redis : Store discovered subreddits as "active"
+end
+
+loop for each subreddit
+    Fetch -> Redis : lrange(posts_search_results:<subreddit>)
+    note right of Fetch : Try loading cached post IDs for this subreddit
+    alt Not cached
+        Fetch -> RedditAPI : subreddit.search(query)
+        note right of RedditAPI : Query Reddit for relevant posts
+        Fetch -> Redis : rpush(posts_search_results:<subreddit>, post_ids)
+        note right of Redis : Cache search results for future runs
+    end
+
+    Fetch -> Redis : get(cursor:<subreddit>)
+    note right of Redis : Load current processing position
+
+    loop while cursor < post_ids and not timed out
+        Fetch -> Redis : sismember(processed:<subreddit>, post_id)
+        note right of Redis : Check if post has already been processed
+        alt Already processed
+            Fetch -> Redis : set cursor = cursor + 1
+            note right of Redis : Skip already processed post
+        else Not processed
+            Fetch -> RedditAPI : submission(post_id)
+            note right of RedditAPI : Retrieve full post metadata
+
+            Fetch -> RedditAPI : replace_more + list comments
+            note right of RedditAPI : Load and flatten comment tree
+
+            Fetch -> Fetch : filter valid comments
+            note right of Fetch : Remove bot messages and invalid entries
+
+            Fetch -> Enqueue : POST post payload (JSON)
+            ' note right of Enqueue : Enqueue the post into the raw data queue
+
+            loop for each comment
+                Fetch -> Enqueue : POST comment payload (JSON)
+                ' note right of Enqueue : Enqueue each valid comment
+            end
+
+            Fetch -> Redis : sadd processed:<subreddit>, post_id
+            note right of Redis : Mark post as processed
+            Fetch -> Redis : set cursor = cursor + 1
+            note right of Redis : Update processing cursor
+        end
+    end
+
+    alt All posts processed
+        Fetch -> Redis : hset STATUS_HASH[subreddit] = "finished"
+        note right of Redis : Mark subreddit as completed
+        Fetch -> Redis : del cursor:<subreddit>
+        note right of Redis : Clear progress state
+    else Not all posts processed
+        Fetch -> Redis : hset STATUS_HASH[subreddit] = "processing"
+        note right of Redis : Keep status as "processing" for next run
+    end
+end
+@enduml

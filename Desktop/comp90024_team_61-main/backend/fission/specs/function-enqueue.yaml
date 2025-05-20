@@ -1,0 +1,27 @@
+apiVersion: fission.io/v1
+kind: Function
+metadata:
+  creationTimestamp: null
+  name: enqueue
+spec:
+  InvokeStrategy:
+    ExecutionStrategy:
+      ExecutorType: poolmgr
+      MaxScale: 10
+      MinScale: 1
+      SpecializationTimeout: 120
+      TargetCPUPercent: 0
+    StrategyType: execution
+  concurrency: 500
+  environment:
+    name: python39
+    namespace: ""
+  functionTimeout: 60
+  idletimeout: 120
+  package:
+    functionName: enqueue.main
+    packageref:
+      name: enqueue
+      namespace: ""
+  requestsPerPod: 100
+  resources: {}

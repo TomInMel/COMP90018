@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-db
+  template:
+    metadata:
+      labels:
+        app: search-db
+    spec:
+      containers:
+      - name: api
+        image: ache8/search-reddit-posts:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: es-credentials
+              key: username
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: es-credentials
+              key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-db
+spec:
+  selector:
+    app: search-db
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

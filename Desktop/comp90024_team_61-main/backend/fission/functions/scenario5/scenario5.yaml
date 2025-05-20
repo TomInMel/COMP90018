@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scenario5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scenario5
+  template:
+    metadata:
+      labels:
+        app: scenario5
+    spec:
+      containers:
+      - name: scenario5
+        image: ache8/scenario5:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: es-credentials
+              key: username
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: es-credentials
+              key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scenario5
+spec:
+  selector:
+    app: scenario5
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
